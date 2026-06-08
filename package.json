@@ -1,0 +1,20 @@
+{
+  "name": "conduit-playwright-e2e",
+  "version": "1.0.0",
+  "description": "End-to-end test suite for the Conduit (RealWorld) application using Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@playwright/test": "^1.58.1",
+    "@types/node": "^25.2.0"
+  }
+}
