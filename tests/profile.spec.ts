@@ -5,6 +5,7 @@ import { ProfilePage } from '../pages/profile.page';
 import { faker } from '@faker-js/faker';
 import { waitForFavoriteResponse } from '../utils/waitHelper';
 import { loginViaApi, deleteAllArticlesByAuthor } from '../utils/apiHelper';
+import { ENV } from '../utils/env';
 
 test.describe('PROFILE - MY POSTS & FAVORITES', () => {
 
@@ -204,9 +205,7 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
   test.afterAll('Cleanup: Delete all test articles via API', async ({ playwright }) => {
     const apiContext = await playwright.request.newContext();
     try {
-      const email = process.env.TEST_EMAIL ?? 'yash1@gmail.com';
-      const password = process.env.TEST_PASSWORD ?? '12345678';
-      const { token, username } = await loginViaApi(apiContext, email, password);
+      const { token, username } = await loginViaApi(apiContext, ENV.USER_EMAIL, ENV.USER_PASSWORD);
       const { deleted, total } = await deleteAllArticlesByAuthor(apiContext, token, username);
       console.log(`✅ Profile cleanup: ${deleted}/${total} articles deleted`);
     } catch (error) {

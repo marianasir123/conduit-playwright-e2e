@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 
 /**
- * Load .env for local runs.
- * In CI the variables are injected by the workflow — dotenv is optional.
+ * Load .env FIRST — must happen before any utils/env module is evaluated.
+ * In CI the variables arrive as secrets, so dotenv is a no-op there.
+ *
+ * Import order matters: keep dotenv.config() before all other project imports
+ * so that process.env is populated before utils/env.ts runs requireEnv().
  */
-// import dotenv from 'dotenv';
-// dotenv.config();
+dotenv.config();
 
 export default defineConfig({
   testDir: './tests',

@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { expect } from '@playwright/test';
 import { switchToGlobalFeedAndWait, waitForFavoriteResponse } from '../utils/waitHelper';
 import { loginViaApi, deleteAllArticlesByAuthor } from '../utils/apiHelper';
+import { ENV } from '../utils/env';
 
 test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
   // Run all tests sequentially in a single worker so the afterAll cleanup
@@ -660,7 +661,7 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
   test.afterAll('Cleanup: Delete all test articles via API', async ({ playwright }) => {
     const apiContext = await playwright.request.newContext();
     try {
-      const { token, username } = await loginViaApi(apiContext, 'yash1@gmail.com', '12345678');
+      const { token, username } = await loginViaApi(apiContext, ENV.USER_EMAIL, ENV.USER_PASSWORD);
       const { deleted, total } = await deleteAllArticlesByAuthor(apiContext, token, username);
       console.log(`✅ Cleanup completed: ${deleted}/${total} articles deleted`);
     } catch (error) {

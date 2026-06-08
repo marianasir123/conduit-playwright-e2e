@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { ENV } from '../utils/env';
 
 type LoginData = {
   email: string;
@@ -7,13 +8,10 @@ type LoginData = {
 
 export const test = base.extend<{ loginData: LoginData }>({
   loginData: async ({}, use) => {
-    const data: LoginData = {
-      // Prefer environment variables so credentials are never hardcoded in CI.
-      // Falls back to the defaults so local runs work without a .env file.
-      email: process.env.TEST_EMAIL ?? 'yash1@gmail.com',
-      password: process.env.TEST_PASSWORD ?? '12345678',
-    };
-    await use(data);
+    await use({
+      email: ENV.USER_EMAIL,
+      password: ENV.USER_PASSWORD,
+    });
   },
 });
 
