@@ -33,8 +33,8 @@ jobs:
         env:
           CI: true
           BASE_URL: ${{ vars.BASE_URL || 'https://conduit.bondaracademy.com' }}
-          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
 
       - name: Upload HTML report
         if: always()
