@@ -32,10 +32,30 @@ export default defineConfig({
    */
   workers: process.env.CI ? 1 : undefined,
 
-  reporter: [
-    ['list'],
-    ['html', { open: 'never' }],
-  ],
+  /**
+   * CI runners are slower than local machines — give each test more time.
+   * 60s per test in CI, 30s locally.
+   */
+  timeout: process.env.CI ? 60_000 : 30_000,
+
+  /**
+   * Reporters:
+   *  - list    → readable console output
+   *  - html    → self-contained HTML report (uploaded as CI artifact)
+   *  - github  → annotates failing lines directly in the GitHub Actions UI (CI only)
+   *  - junit   → XML results parsed by GitHub Actions to show pass/fail counts (CI only)
+   */
+  reporter: process.env.CI
+    ? [
+        ['list'],
+        ['html', { open: 'never' }],
+        ['github'],
+        ['junit', { outputFile: 'test-results/results.xml' }],
+      ]
+    : [
+        ['list'],
+        ['html', { open: 'never' }],
+      ],
 
   use: {
     /** Resolved from env → falls back to the hosted demo site. */

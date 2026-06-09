@@ -36,6 +36,15 @@ jobs:
           USER_EMAIL: ${{ secrets.USER_EMAIL }}
           USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
 
+      - name: Publish test results to GitHub
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Playwright Results
+          path: test-results/results.xml
+          reporter: java-junit
+          fail-on-error: false
+
       - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
