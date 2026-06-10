@@ -41,20 +41,23 @@ export default defineConfig({
   /**
    * Reporters:
    *  - list    → readable console output
-   *  - html    → self-contained HTML report (uploaded as CI artifact)
-   *  - github  → annotates failing lines directly in the GitHub Actions UI (CI only)
-   *  - junit   → XML results parsed by GitHub Actions to show pass/fail counts (CI only)
+   *  - html    → interactive HTML report (uploaded as CI artifact)
+   *  - json    → machine-readable results for scripts/generate-test-report.mjs
+   *  - github  → annotates failing lines in the GitHub Actions UI (CI only)
+   *  - junit   → XML results shown in GitHub Checks via dorny/test-reporter (CI only)
    */
   reporter: process.env.CI
     ? [
         ['list'],
         ['html', { open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
         ['github'],
         ['junit', { outputFile: 'test-results/results.xml' }],
       ]
     : [
         ['list'],
         ['html', { open: 'never' }],
+        ['json', { outputFile: 'test-results/results.json' }],
       ],
 
   use: {

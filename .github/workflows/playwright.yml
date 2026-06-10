@@ -6,11 +6,19 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   e2e:
     name: Run Playwright tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -19,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,7 +44,15 @@ jobs:
           USER_EMAIL: ${{ secrets.USER_EMAIL }}
           USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
 
-      - name: Publish test results to GitHub
+      - name: Generate test report summary
+        if: always()
+        run: npm run report:generate
+
+      - name: Publish summary to GitHub job results
+        if: always()
+        run: cat test-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish test results to GitHub Checks
         if: always()
         uses: dorny/test-reporter@v1
         with:
@@ -51,6 +67,18 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test summary report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-report
+          path: |
+            test-results/summary.md
+            test-results/summary.html
+            test-results/results.json
+            test-results/results.xml
           retention-days: 14
 
       - name: Upload test results (traces, screenshots, videos)
