@@ -1,0 +1,20 @@
+---
+description: Quick sync — push current dev commits to origin/dev only (no merge to main)
+---
+
+# Git Sync Dev
+
+Lightweight push to `origin/dev` without merging to `main`.
+
+## Steps
+
+1. Run `git status`, `git diff`, `git log --oneline -3`
+2. Ensure on `dev`: `git checkout dev && git pull origin dev`
+3. If uncommitted changes exist, ask whether to commit first or run `/git-release` for the full flow
+4. Push: `git push -u origin dev`
+5. Report branch status and latest commit SHA
+
+## When to use
+
+- Work-in-progress on `dev` that is not ready for `main`
+- For release to production branch, use `/git-release` instead

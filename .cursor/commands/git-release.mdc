@@ -1,0 +1,71 @@
+---
+description: Commit on dev with meaningful messages, push origin/dev, merge into main, and push origin/main
+---
+
+# Git Release Workflow
+
+Run this full release flow for **conduit-playwright-e2e**. Do not force-push to `main`.
+
+## 1. Inspect state
+
+Run in parallel:
+- `git status`
+- `git diff` and `git diff --staged`
+- `git log --oneline -5`
+- `git branch -a`
+
+Ensure `.env` and secrets are **not** staged.
+
+## 2. Commit on `dev` (meaningful, grouped commits)
+
+```bash
+git checkout dev
+git pull origin dev
+```
+
+Group related changes into separate commits (examples):
+- `fix:` — bug fixes, test stability, CI env fixes
+- `feat:` — new features (reporting, new tests)
+- `refactor:` — structure changes without behavior change
+- `chore:` — tooling, cursor commands, docs
+
+For each group:
+```bash
+git add <files>
+git commit -m "$(cat <<'EOF'
+<type>: <short why-focused message>
+
+EOF
+)"
+```
+
+If nothing to commit, skip to step 3.
+
+## 3. Push `dev`
+
+```bash
+git push -u origin dev
+```
+
+## 4. Merge `dev` → `main`
+
+```bash
+git checkout main
+git pull origin main
+git merge origin/dev -m "Merge branch 'dev' into main"
+git push origin main
+```
+
+## 5. Return to `dev`
+
+```bash
+git checkout dev
+git status
+```
+
+## Rules
+
+- Never `git push --force` to `main`
+- Never commit `.env` or credentials
+- Resolve merge conflicts before pushing
+- Report commit SHAs, branch state, and GitHub Actions URL if CI triggered
