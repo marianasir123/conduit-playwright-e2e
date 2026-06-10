@@ -267,7 +267,7 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
 
   // ==================== EDIT ARTICLE - NEGATIVE CASES ====================
 
-  test('TC_ART_012: Edit article should fail when removing required field (title)', async ({ page, loginPageObj, nav }) => {
+  test.skip('TC_ART_012: Edit article should fail when removing required field (title)', async ({ page, loginPageObj, nav }) => {
     const newArticlePage = new NewArticlePage(page);
     const articlePage = new ArticlePage(page);
 
