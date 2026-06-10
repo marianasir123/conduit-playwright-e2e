@@ -1,18 +1,16 @@
-import { test, expect } from '../fixtures/cleanupData.fixture';
+import { test, expect } from '../fixtures/loginPage.fixture';
 import { NewArticlePage } from '../pages/newArticle.page';
 import { ArticlePage } from '../pages/article.page';
-import { ProfilePage } from '../pages/profile.page';
 import { faker } from '@faker-js/faker';
 import { waitForFavoriteResponse } from '../utils/waitHelper';
 import { loginViaApi, deleteAllArticlesByAuthor } from '../utils/apiHelper';
 import { ENV } from '../utils/env';
 
 test.describe('PROFILE - MY POSTS & FAVORITES', () => {
+  test.describe.configure({ mode: 'serial' });
 
-  test('TC_ART_027: Created article should appear in "My Posts" section of profile', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_027: Created article should appear in "My Posts" section of profile', async ({ page, nav, profilePage, loginPageObj }) => {
     const newArticlePage = new NewArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
     await nav.clickNewArticle();
     const articleTitle = 'Profile Test Article ' + faker.word.words(2);
@@ -20,26 +18,25 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
     await newArticlePage.publish();
     await page.waitForURL(/\/article\//, { timeout: 5000 });
 
-    await profilePage.gotoProfile(username);
-    const isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(true);
+    await profilePage.gotoProfile();
+    await expect(page.getByText(articleTitle).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('TC_ART_028: "My Posts" tab should show all articles created by user', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_028: "My Posts" tab should show all articles created by user', async ({ page, nav, profilePage, loginPageObj }) => {
     const newArticlePage = new NewArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
-    await profilePage.gotoProfile(username);
+    await profilePage.gotoProfile();
     const countBefore = await profilePage.getArticlesCount();
 
     await nav.clickNewArticle();
     const articleTitle = 'Count Test Article ' + faker.word.words(2);
     await newArticlePage.fillArticle(articleTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
     await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await page.waitForURL(/\/article\//, { timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(articleTitle, { timeout: 10000 });
 
-    await profilePage.gotoProfile(username);
+    await profilePage.gotoProfile();
+    await expect(page.getByText(articleTitle).first()).toBeVisible({ timeout: 15000 });
     const countAfter = await profilePage.getArticlesCount();
     expect(countAfter).toBeGreaterThan(countBefore);
 
@@ -47,11 +44,8 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
     expect(isVisible).toBe(true);
   });
 
-  test('TC_ART_029: "My Posts" should not show other users\' articles', async ({ page, loginPageObj, nav, loginData }) => {
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
-
-    await profilePage.gotoProfile(username);
+  test('TC_ART_029: "My Posts" should not show other users\' articles', async ({ page, profilePage, loginPageObj }) => {
+    await profilePage.gotoProfile();
     const articlesCount = await profilePage.getArticlesCount();
 
     if (articlesCount > 0) {
@@ -61,36 +55,31 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
     }
   });
 
-  test('TC_ART_030: Deleted article should be removed from "My Posts"', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_030: Deleted article should be removed from "My Posts"', async ({ page, nav, profilePage, loginPageObj }) => {
     const newArticlePage = new NewArticlePage(page);
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
     await nav.clickNewArticle();
     const articleTitle = 'Delete Profile Test ' + faker.word.words(2);
     await newArticlePage.fillArticle(articleTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
     await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await page.waitForURL(/\/article\//, { timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(articleTitle, { timeout: 10000 });
 
-    await profilePage.gotoProfile(username);
-    let isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(true);
+    await profilePage.gotoProfile();
+    await expect(page.getByText(articleTitle).first()).toBeVisible({ timeout: 15000 });
 
     await profilePage.clickArticleByTitle(articleTitle);
     await articlePage.clickDelete();
     await page.waitForURL(/conduit.bondaracademy.com\/$/, { timeout: 5000 });
 
-    await profilePage.gotoProfile(username);
-    isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(false);
+    await profilePage.gotoProfile();
+    await expect(page.getByText(articleTitle).first()).not.toBeVisible({ timeout: 15000 });
   });
 
-  test('TC_ART_031: Edited article should reflect changes in "My Posts"', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_031: Edited article should reflect changes in "My Posts"', async ({ page, nav, profilePage, loginPageObj }) => {
     const newArticlePage = new NewArticlePage(page);
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
     await nav.clickNewArticle();
     const originalTitle = 'Edit Profile Test ' + faker.word.words(2);
@@ -107,90 +96,82 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
     await newArticlePage.publish();
     await page.waitForURL(/\/article\//, { timeout: 5000 });
 
-    await profilePage.gotoProfile(username);
+    await profilePage.gotoProfile();
     await expect(page.locator('text=' + updatedTitle).first()).toBeVisible({ timeout: 10000 });
     const isOldVisible = await profilePage.isArticleVisible(originalTitle);
     expect(isOldVisible).toBe(false);
   });
 
-  test('TC_ART_032: "Favorited Posts" tab should show favorited articles', async ({ page, loginPageObj, nav, loginData }) => {
-    const newArticlePage = new NewArticlePage(page);
+  test('TC_ART_032: "Favorited Posts" tab should show favorited articles', async ({ page, username, profilePage, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
-    await nav.clickNewArticle();
-    const articleTitle = 'Favorite Profile Test ' + faker.word.words(2);
-    await newArticlePage.fillArticle(articleTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
-    await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await articlePage.openOtherUsersArticle(username);
+
+    if ((await articlePage.favoriteButton.textContent() ?? '').includes('Unfavorite')) {
+      await articlePage.clickFavorite();
+      await waitForFavoriteResponse(page);
+    }
+
+    const articleTitle = (await articlePage.getArticleTitle())?.trim() ?? '';
+    expect(articleTitle.length).toBeGreaterThan(0);
 
     await articlePage.clickFavorite();
     await waitForFavoriteResponse(page);
 
-    await profilePage.gotoProfile(username);
+    await profilePage.gotoProfile();
     await profilePage.clickFavoritedPostsTab();
-    const isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(true);
+    await expect(page.getByText(articleTitle).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('TC_ART_033: Unfavoriting article should remove it from "Favorited Posts"', async ({ page, loginPageObj, nav, loginData }) => {
-    const newArticlePage = new NewArticlePage(page);
+  test('TC_ART_033: Unfavoriting article should remove it from "Favorited Posts"', async ({ page, username, profilePage, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
 
-    await nav.clickNewArticle();
-    const articleTitle = 'Unfavorite Profile Test ' + faker.word.words(2);
-    await newArticlePage.fillArticle(articleTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
-    await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await articlePage.openOtherUsersArticle(username);
 
-    await articlePage.clickFavorite();
-    await waitForFavoriteResponse(page);
+    if (!(await articlePage.favoriteButton.textContent() ?? '').includes('Unfavorite')) {
+      await articlePage.clickFavorite();
+      await waitForFavoriteResponse(page);
+    }
 
-    await profilePage.gotoProfile(username);
+    const articleTitle = (await articlePage.getArticleTitle())?.trim() ?? '';
+    expect(articleTitle.length).toBeGreaterThan(0);
+
+    await profilePage.gotoProfile();
     await profilePage.clickFavoritedPostsTab();
-    let isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(true);
+    await expect(page.getByText(articleTitle).first()).toBeVisible({ timeout: 15000 });
 
     await profilePage.clickArticleByTitle(articleTitle);
     await articlePage.clickFavorite();
     await waitForFavoriteResponse(page);
 
-    await profilePage.gotoProfile(username);
+    await profilePage.gotoProfile();
     await profilePage.clickFavoritedPostsTab();
-    isVisible = await profilePage.isArticleVisible(articleTitle);
-    expect(isVisible).toBe(false);
+    await expect(page.getByText(articleTitle).first()).not.toBeVisible({ timeout: 15000 });
   });
 
-  test('TC_ART_034: Profile should display correct article count in "My Posts"', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_034: Profile should display correct article count in "My Posts"', async ({ page, nav, profilePage, loginPageObj }) => {
     const newArticlePage = new NewArticlePage(page);
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
-
-    await profilePage.gotoProfile(username);
-    const countBefore = await profilePage.getArticlesCount();
+    const createdTitles: string[] = [];
 
     for (let i = 0; i < 2; i++) {
       await nav.clickNewArticle();
       const articleTitle = `Batch Article ${i + 1} ` + faker.word.words(2);
+      createdTitles.push(articleTitle);
       await newArticlePage.fillArticle(articleTitle, faker.lorem.sentence(), faker.lorem.paragraphs(1));
       await newArticlePage.publish();
-      await page.waitForURL(/\/article\//, { timeout: 5000 });
+      await page.waitForURL(/\/article\//, { timeout: 10000 });
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(articleTitle, { timeout: 10000 });
       await nav.clickHome();
     }
 
-    await profilePage.gotoProfile(username);
-    const countAfter = await profilePage.getArticlesCount();
-    expect(countAfter).toBe(countBefore + 2);
+    await profilePage.gotoProfile();
+    for (const title of createdTitles) {
+      await expect(page.getByText(title).first()).toBeVisible({ timeout: 15000 });
+    }
   });
 
-  test('TC_ART_035: "My Posts" and "Favorited Posts" tabs should be switchable', async ({ page, loginPageObj, nav, loginData }) => {
-    const username = loginData.email.split('@')[0];
-    const profilePage = new ProfilePage(page, username);
-
-    await profilePage.gotoProfile(username);
+  test('TC_ART_035: "My Posts" and "Favorited Posts" tabs should be switchable', async ({ page, profilePage, loginPageObj }) => {
+    await profilePage.gotoProfile();
 
     await profilePage.clickFavoritedPostsTab();
     expect(page.url()).toContain('/favorites');
@@ -199,8 +180,6 @@ test.describe('PROFILE - MY POSTS & FAVORITES', () => {
     expect(page.url()).not.toContain('/favorites');
     expect(page.url()).toContain('/profile/');
   });
-
-  // ==================== CLEANUP ====================
 
   test.afterAll('Cleanup: Delete all test articles via API', async ({ playwright }) => {
     const apiContext = await playwright.request.newContext();

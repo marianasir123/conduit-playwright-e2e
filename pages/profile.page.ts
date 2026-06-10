@@ -2,6 +2,7 @@ import { Locator, Page } from '@playwright/test';
 
 export class ProfilePage {
   readonly page: Page;
+  readonly username: string;
   readonly myPostsTab: Locator;
   readonly favoritedPostsTab: Locator;
   readonly articlesContainer: Locator;
@@ -10,6 +11,7 @@ export class ProfilePage {
 
   constructor(page: Page, username: string) {
     this.page = page;
+    this.username = username;
     this.myPostsTab = page.getByRole('link', { name: 'My Posts' });
     this.favoritedPostsTab = page.getByRole('link', { name: 'Favorited Posts' });
     this.articlesContainer = page.locator('app-article-list');
@@ -17,8 +19,30 @@ export class ProfilePage {
     this.profileName = page.getByRole('heading', { level: 4 });
   }
 
-  async gotoProfile(username: string) {
+  /**
+   * Navigates to a profile page and waits for the profile heading and article feed.
+   * Waits for a visible element (not a hard timeout or networkidle).
+   */
+  async gotoProfile(username = this.username) {
     await this.page.goto(`/profile/${username}`);
+    await this.profileName.waitFor({ state: 'visible' });
+    await this.page
+      .waitForResponse(
+        resp => resp.url().includes('/api/articles') && resp.request().method() === 'GET' && resp.ok(),
+        { timeout: 15000 },
+      )
+      .catch(() => {});
+  }
+
+  async gotoFavorites(username = this.username) {
+    await this.page.goto(`/profile/${username}/favorites`);
+    await this.profileName.waitFor({ state: 'visible' });
+    await this.page
+      .waitForResponse(
+        resp => resp.url().includes('/api/articles') && resp.request().method() === 'GET' && resp.ok(),
+        { timeout: 15000 },
+      )
+      .catch(() => {});
   }
 
   async clickMyPostsTab() {

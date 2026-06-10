@@ -1,17 +1,17 @@
-import { test as base, expect } from '@playwright/test';
+import { test as loginDataTest } from './loginData.fixture';
 import { LoginPage } from '../pages/login.page';
 import { Navigation } from '../pages/navigation.page';
-import { test as loginDataTest } from './loginData.fixture';
+import { ProfilePage } from '../pages/profile.page';
 
 type LoginPageFixture = {
   loginPageObj: LoginPage;
   nav: Navigation;
+  profilePage: ProfilePage;
 };
 
 export const test = loginDataTest.extend<LoginPageFixture>({
   nav: async ({ page }, use) => {
-    const navigation = new Navigation(page);
-    await use(navigation);
+    await use(new Navigation(page));
   },
 
   loginPageObj: async ({ page, loginData, nav }, use) => {
@@ -21,6 +21,10 @@ export const test = loginDataTest.extend<LoginPageFixture>({
     await loginPage.login(loginData.email, loginData.password);
     await page.waitForURL(/conduit.bondaracademy.com\/$/, { timeout: 15000 });
     await use(loginPage);
+  },
+
+  profilePage: async ({ page, username, loginPageObj }, use) => {
+    await use(new ProfilePage(page, username));
   },
 });
 

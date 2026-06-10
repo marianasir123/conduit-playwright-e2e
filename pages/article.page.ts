@@ -38,10 +38,12 @@ export class ArticlePage {
   }
 
   async clickDelete() {
+    await this.deleteButton.waitFor({ state: 'visible', timeout: 15000 });
     await this.deleteButton.click();
   }
 
   async clickFavorite() {
+    await this.favoriteButton.waitFor({ state: 'visible', timeout: 15000 });
     await this.favoriteButton.click();
   }
 

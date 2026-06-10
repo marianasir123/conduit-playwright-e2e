@@ -1,4 +1,4 @@
-import { test } from '../fixtures/cleanupData.fixture';
+import { test } from '../fixtures/loginPage.fixture';
 import { NewArticlePage } from '../pages/newArticle.page';
 import { ArticlePage } from '../pages/article.page';
 import { faker } from '@faker-js/faker';
@@ -450,9 +450,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
 
   // ==================== FAVORITE ARTICLE - HAPPY PATH ====================
 
-  test('TC_ART_018: User should favorite an article successfully', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_018: User should favorite an article successfully', async ({ page, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 
@@ -468,9 +467,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     expect(countAfter).not.toBe(countBefore);
   });
 
-  test('TC_ART_019: Favorite button should show active state', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_019: Favorite button should show active state', async ({ page, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 
@@ -487,9 +485,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     expect(classBefore).not.toBe(classAfter);
   });
 
-  test('TC_ART_020: Favorite article should appear in user profile', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_020: Favorite article should appear in user profile', async ({ page, profilePage, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 
@@ -507,7 +504,7 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     await waitForFavoriteResponse(page);
 
     // Verify the article appears in the user's favorites list
-    await page.goto(`/profile/${username}/favorites`);
+    await profilePage.gotoFavorites();
     await page.waitForURL(/\/profile\/.*\/favorites/, { timeout: 5000 });
     await page.locator('app-article-preview').first().waitFor({ state: 'visible', timeout: 10000 });
     await expect(page.locator('text=' + articleTitle).first()).toBeVisible({ timeout: 10000 });
@@ -515,9 +512,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
 
   // ==================== UNFAVORITE ARTICLE - HAPPY PATH ====================
 
-  test('TC_ART_021: User should unfavorite an article successfully', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_021: User should unfavorite an article successfully', async ({ page, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 
@@ -538,9 +534,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     expect(countAfterUnfavorite).not.toBe(countAfterFavorite);
   });
 
-  test('TC_ART_022: Favorite button should return to inactive state after unfavorite', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_022: Favorite button should return to inactive state after unfavorite', async ({ page, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 
@@ -621,9 +616,8 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     expect(retrievedTitle).toContain(updatedTitle);
   });
 
-  test('TC_ART_025: Multiple users should not interfere with article operations', async ({ page, loginPageObj, nav, loginData }) => {
+  test('TC_ART_025: Multiple users should not interfere with article operations', async ({ page, username, loginPageObj }) => {
     const articlePage = new ArticlePage(page);
-    const username = loginData.email.split('@')[0];
 
     await articlePage.openOtherUsersArticle(username);
 

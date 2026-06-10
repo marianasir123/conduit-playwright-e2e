@@ -33,17 +33,12 @@ test.describe('Authentication - Login Test Cases', () => {
 
   test('TC_AUTH_003: Session should persist on page refresh', async ({ page, loginPageObj }) => {
     const nav = new Navigation(page);
-    
-    // Verify logged in before refresh
-    let isLoggedIn = await nav.isLoggedIn();
-    expect(isLoggedIn).toBe(true);
-    
-    // Refresh page
-    await page.reload();
-    //await expect(page).toHaveURL('/');
-    // Verify still logged in after refresh
-    isLoggedIn = await nav.isLoggedIn();
-    expect(isLoggedIn).toBe(true);
+
+    await expect(nav.newArticleLink).toBeVisible();
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(nav.newArticleLink).toBeVisible({ timeout: 15000 });
+    await expect(nav.signInLink).not.toBeVisible();
   });
 
   test('TC_AUTH_004: User profile should be accessible after login', async ({ page, loginPageObj }) => {
@@ -206,7 +201,7 @@ test.describe('Authentication - Login Test Cases', () => {
       await signInButton.click();
       
       // Wait for error message to appear - verify actual website error message
-      const errorMessage = page.locator('text=/Invalid email or password/i');
+      const errorMessage = page.locator('text=/email or password is invalid/i');
       await expect(errorMessage).toBeVisible({ timeout: 5000 });
       
       // Should not redirect to home

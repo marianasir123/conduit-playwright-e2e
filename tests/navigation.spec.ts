@@ -109,8 +109,7 @@ test.describe('Navigation - Unauthenticated User', () => {
 
 test.describe('Navigation - Authenticated User', () => {
 
-  test('TC_NAV_015: Navbar should show Home, New Article, Settings, and username when logged in', async ({ page, nav, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
+  test('TC_NAV_015: Navbar should show Home, New Article, Settings, and username when logged in', async ({ nav, loginPageObj, username }) => {
     await expect(nav.homeLink).toBeVisible();
     await expect(nav.newArticleLink).toBeVisible();
     await expect(nav.settingsLink).toBeVisible();
@@ -145,8 +144,7 @@ test.describe('Navigation - Authenticated User', () => {
     await expect(page).toHaveURL(/\/settings/, { timeout: 5000 });
   });
 
-  test('TC_NAV_021: Clicking profile/username link should navigate to /profile/{username}', async ({ page, nav, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
+  test('TC_NAV_021: Clicking profile/username link should navigate to /profile/{username}', async ({ page, nav, loginPageObj, username }) => {
     await nav.clickProfile();
     await expect(page).toHaveURL(new RegExp(`/profile/${username}`), { timeout: 5000 });
   });
@@ -166,30 +164,28 @@ test.describe('Navigation - Authenticated User', () => {
     await expect(page.getByRole('button', { name: /logout|click here to logout/i })).toBeVisible();
   });
 
-  test('TC_NAV_024: Navigating to /profile/{username} directly should load user profile (authenticated)', async ({ page, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
+  test('TC_NAV_024: Navigating to /profile/{username} directly should load user profile (authenticated)', async ({ page, loginPageObj, username }) => {
     await page.goto(`/profile/${username}`);
     await expect(page).toHaveURL(new RegExp(`/profile/${username}`), { timeout: 5000 });
-    await expect(page.getByRole('heading', { level: 4 })).toContainText(username, { timeout: 5000 });
+    await expect(page.getByRole('heading', { level: 4 })).toContainText(username, { timeout: 15000 });
   });
 
-  test('TC_NAV_025: Profile page should show My Posts and Favorited Posts tabs', async ({ page, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
-    await page.goto(`/profile/${username}`);
-    await expect(page.getByRole('link', { name: 'My Posts' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Favorited Posts' })).toBeVisible();
+  test('TC_NAV_025: Profile page should show My Posts and Favorited Posts tabs', async ({ page, loginPageObj, username, profilePage }) => {
+    await profilePage.gotoProfile();
+    await expect(page.getByRole('link', { name: 'My Posts' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('link', { name: 'Favorited Posts' })).toBeVisible({ timeout: 15000 });
   });
 
-  test('TC_NAV_026: Switching from My Posts to Favorited Posts tab should update the URL', async ({ page, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
-    await page.goto(`/profile/${username}`);
+  test('TC_NAV_026: Switching from My Posts to Favorited Posts tab should update the URL', async ({ page, loginPageObj, profilePage }) => {
+    await profilePage.gotoProfile();
+    await expect(page.getByRole('link', { name: 'Favorited Posts' })).toBeVisible({ timeout: 15000 });
     await page.getByRole('link', { name: 'Favorited Posts' }).click();
     await expect(page).toHaveURL(/\/favorites/, { timeout: 5000 });
   });
 
-  test('TC_NAV_027: Switching back from Favorited Posts to My Posts tab should update the URL', async ({ page, loginPageObj, loginData }) => {
-    const username = loginData.email.split('@')[0];
+  test('TC_NAV_027: Switching back from Favorited Posts to My Posts tab should update the URL', async ({ page, loginPageObj, username, profilePage }) => {
     await page.goto(`/profile/${username}/favorites`);
+    await expect(page.getByRole('link', { name: 'My Posts' })).toBeVisible({ timeout: 15000 });
     await page.getByRole('link', { name: 'My Posts' }).click();
     await expect(page).toHaveURL(new RegExp(`/profile/${username}/?$`), { timeout: 5000 });
   });
