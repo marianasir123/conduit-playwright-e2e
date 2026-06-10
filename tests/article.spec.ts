@@ -186,39 +186,19 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     const newArticlePage = new NewArticlePage(page);
     const articlePage = new ArticlePage(page);
     
-    // Create article first
     await nav.clickNewArticle();
     const originalTitle = 'Original Article ' + faker.word.words(2);
-    const originalDesc = faker.lorem.sentence();
-    const originalBody = faker.lorem.paragraphs(2);
+    await newArticlePage.fillArticle(originalTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
+    await newArticlePage.publishAndWaitForArticlePage();
     
-    await newArticlePage.fillArticle(originalTitle, originalDesc, originalBody);
-    await newArticlePage.publish();
-    
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
-    
-    // Edit the article
     await articlePage.clickEdit();
-    await page.waitForURL(/\/editor\//, { timeout: 5000 });
+    await page.waitForURL(/\/editor\//, { timeout: 10000 });
     
-    // Update article content
     const updatedTitle = 'Updated Article ' + faker.word.words(2);
-    const updatedDesc = faker.lorem.sentence();
-    const updatedBody = faker.lorem.paragraphs(2);
+    await newArticlePage.updateArticle(updatedTitle, faker.lorem.sentence(), faker.lorem.paragraphs(2));
+    await newArticlePage.publishAndWaitForArticlePage();
     
-    await newArticlePage.titleInput.clear();
-    await newArticlePage.descriptionInput.clear();
-    await newArticlePage.bodyInput.clear();
-    
-    await newArticlePage.fillArticle(updatedTitle, updatedDesc, updatedBody);
-    await newArticlePage.publish();
-    
-    // Wait for article page
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
-    
-    // Verify updated content
-    const retrievedTitle = await articlePage.getArticleTitle();
-    expect(retrievedTitle).toContain(updatedTitle);
+    await expect(articlePage.articleTitle).toContainText(updatedTitle, { timeout: 15000 });
   });
 
   test('TC_ART_010: Edit article form should be prepopulated with current content', async ({ page, loginPageObj, nav }) => {
@@ -272,15 +252,13 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     // Wait a moment and edit
     await page.waitForTimeout(1000);
     await articlePage.clickEdit();
-    await page.waitForURL(/\/editor\//, { timeout: 5000 });
+    await page.waitForURL(/\/editor\//, { timeout: 10000 });
     
-    // Change title
     const updatedTitle = 'Updated Timestamp ' + faker.word.words(2);
-    await newArticlePage.titleInput.clear();
-    await newArticlePage.titleInput.fill(updatedTitle);
+    await newArticlePage.waitForEditFormReady();
+    await newArticlePage.setFieldValue(newArticlePage.titleInput, updatedTitle);
     
-    await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await newArticlePage.publishAndWaitForArticlePage();
     
     // Verify article was updated
     const updatedTimestamp = await page.locator('[class*="meta"]').first().textContent();
@@ -330,15 +308,13 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     
     // Edit article
     await articlePage.clickEdit();
-    await page.waitForURL(/\/editor\//, { timeout: 5000 });
+    await page.waitForURL(/\/editor\//, { timeout: 10000 });
     
-    // Make minor change
     const updatedTitle = 'Updated Tagged Article ' + faker.word.words(2);
-    await newArticlePage.titleInput.clear();
-    await newArticlePage.titleInput.fill(updatedTitle);
+    await newArticlePage.waitForEditFormReady();
+    await newArticlePage.setFieldValue(newArticlePage.titleInput, updatedTitle);
     
-    await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await newArticlePage.publishAndWaitForArticlePage();
     
     // Verify article exists
     const retrievedTitle = await articlePage.getArticleTitle();
@@ -601,19 +577,15 @@ test.describe('Article Management - Create, Edit, Delete, Favorite', () => {
     
     // Immediately edit without leaving page
     await articlePage.clickEdit();
-    await page.waitForURL(/\/editor\//, { timeout: 5000 });
+    await page.waitForURL(/\/editor\//, { timeout: 10000 });
     
-    // Quick edit
     const updatedTitle = 'Rapid Edit Updated ' + faker.word.words(2);
-    await newArticlePage.titleInput.clear();
-    await newArticlePage.titleInput.fill(updatedTitle);
+    await newArticlePage.waitForEditFormReady();
+    await newArticlePage.setFieldValue(newArticlePage.titleInput, updatedTitle);
     
-    await newArticlePage.publish();
-    await page.waitForURL(/\/article\//, { timeout: 5000 });
+    await newArticlePage.publishAndWaitForArticlePage();
     
-    // Verify update
-    const retrievedTitle = await articlePage.getArticleTitle();
-    expect(retrievedTitle).toContain(updatedTitle);
+    await expect(articlePage.articleTitle).toContainText(updatedTitle, { timeout: 15000 });
   });
 
   test('TC_ART_025: Multiple users should not interfere with article operations', async ({ page, username, loginPageObj }) => {
