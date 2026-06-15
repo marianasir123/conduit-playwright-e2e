@@ -11,6 +11,9 @@ export class ArticlePage {
   readonly commentInput: Locator;
   readonly submitCommentButton: Locator;
   readonly comments: Locator;
+  readonly commentCards: Locator;
+  readonly commentDeleteButtons: Locator;
+  readonly commentErrorMessages: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +26,13 @@ export class ArticlePage {
     this.commentInput = page.locator('textarea');
     this.submitCommentButton = page.getByRole('button', { name: /Post Comment/ });
     this.comments = page.locator('[class*="comment"]');
+    this.commentCards = this.page.locator('.card').filter({
+      has: this.page.locator('.comment-author'),
+    });
+    this.commentDeleteButtons = this.commentCards.locator(
+      '.mod-options .ion-trash-a, app-delete-button',
+    );
+    this.commentErrorMessages = page.locator('ul.error-messages li');
   }
 
   async getArticleTitle() {
@@ -96,9 +106,56 @@ export class ArticlePage {
   async addComment(text: string) {
     await this.commentInput.fill(text);
     await this.submitCommentButton.click();
+    // Wait for the comment POST to complete
+    await this.page.waitForResponse(
+      resp => resp.url().includes('/comments') && resp.request().method() === 'POST' && resp.ok(),
+      { timeout: 10000 },
+    );
+  }
+
+  async deleteComment(index = 0) {
+    const btn = this.commentDeleteButtons.nth(index);
+    await btn.waitFor({ state: 'visible', timeout: 10000 });
+    await btn.click();
+    // Wait for the DELETE request to complete
+    await this.page.waitForResponse(
+      resp => resp.url().includes('/comments') && resp.request().method() === 'DELETE' && resp.ok(),
+      { timeout: 10000 },
+    );
   }
 
   async getCommentsCount() {
     return await this.comments.count();
+  }
+
+  /** Returns the text bodies of all comment cards on the page. */
+  async getCommentBodies(): Promise<string[]> {
+    const cards = this.page.locator('.card').filter({
+      has: this.page.locator('.comment-author'),
+    });
+    const all = await cards.locator('.card-block p').all();
+    return Promise.all(all.map(l => l.textContent().then(t => t?.trim() ?? '')));
+  }
+
+  /** Returns the usernames of all visible comment authors. */
+  async getCommentAuthorUsernames(): Promise<string[]> {
+    const authorLinks = this.page.locator('.card .comment-author');
+    const all = await authorLinks.all();
+    return Promise.all(all.map(l => l.textContent().then(t => t?.trim() ?? '')));
+  }
+
+  /** Waits for the comment section to finish loading from the API. */
+  async waitForCommentsLoaded() {
+    await this.page
+      .waitForResponse(
+        resp => resp.url().includes('/comments') && resp.request().method() === 'GET' && resp.ok(),
+        { timeout: 15000 },
+      )
+      .catch(() => {});
+  }
+
+  /** Returns true if the comment form textarea is visible (user is logged in). */
+  async isCommentFormVisible(): Promise<boolean> {
+    return this.commentInput.isVisible().catch(() => false);
   }
 }
