@@ -74,6 +74,30 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
+  /**
+   * Visual-regression (toHaveScreenshot) configuration.
+   *
+   * Baselines are stored under screenshots/<spec>-snapshots/.
+   * To generate baselines on first run:  npx playwright test --update-snapshots
+   *
+   * maxDiffPixelRatio: 0.05 — allow ≤5% pixel difference so minor rendering
+   * noise (anti-aliasing, dynamic timestamps) does not cause false failures.
+   */
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.05,
+    },
+  },
+
+  /** Root directory for toHaveScreenshot baselines. */
+  snapshotDir: './screenshots',
+
+  /**
+   * Snapshot path template — organises baselines by spec file name.
+   * Result: screenshots/<spec-filename>-snapshots/<name>.png
+   */
+  snapshotPathTemplate: '{snapshotDir}/{testFileName}-snapshots/{arg}{ext}',
+
   projects: [
     {
       name: 'chromium',

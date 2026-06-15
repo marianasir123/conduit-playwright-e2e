@@ -6,7 +6,7 @@ import { waitForFavoriteResponse } from '../utils/waitHelper';
 import { loginViaApi, deleteAllArticlesByAuthor } from '../utils/apiHelper';
 import { ENV } from '../utils/env';
 
-test.describe('PROFILE - MY POSTS & FAVORITES', () => {
+test.describe('4.8 Profile Tests — TC_ART_027–035', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('TC_ART_027: Created article should appear in "My Posts" section of profile', async ({ page, nav, profilePage, loginPageObj }) => {
