@@ -8,9 +8,10 @@
  *  - Your Feed pagination
  *  - Switching feed tabs resets pagination to page 1
  *
- * No article seeding is needed — the Conduit public demo always has >10
- * articles in the Global Feed. Tests that require pagination skip gracefully
- * when the feed has only one page.
+ * Setup:
+ *   The Global Feed page size is 10. To guarantee page 2 always exists, we
+ *   seed 5 extra articles in beforeAll and delete them in afterAll. This makes
+ *   the suite self-contained and independent of ambient server state.
  *
  * Screenshot baselines:
  *   Run once with  npx playwright test feed.spec.ts --update-snapshots
@@ -22,6 +23,8 @@ import * as path from 'path';
 import { test, expect } from '../fixtures/loginPage.fixture';
 import { HomeFeedPage } from '../pages/homeFeed.page';
 import { switchToGlobalFeedAndWait } from '../utils/waitHelper';
+import { loginViaApi, createArticleViaApi, deleteArticleViaApi } from '../utils/apiHelper';
+import { ENV } from '../utils/env';
 
 const SCREENSHOT_DIR = path.join('screenshots', 'feed');
 fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -30,9 +33,33 @@ function screenshotPath(tcId: string) {
   return path.join(SCREENSHOT_DIR, `${tcId}-current.png`);
 }
 
+/** Number of articles to seed — enough to push past the 10-article page limit. */
+const SEED_COUNT = 3;
+
 test.describe('Pagination Tests — TC_PAG_001–005', () => {
   // Serial to avoid parallel tests fighting over the same page numbers
   test.describe.configure({ mode: 'serial' });
+
+  const seededSlugs: string[] = [];
+
+  test.beforeAll(async ({ request }) => {
+    const { token } = await loginViaApi(request, ENV.USER_EMAIL, ENV.USER_PASSWORD);
+    for (let i = 0; i < SEED_COUNT; i++) {
+      const { slug } = await createArticleViaApi(request, token, {
+        title: `PAG Seed Article ${Date.now()}-${i}`,
+        description: 'Seeded for pagination tests',
+        body: 'Pagination seed body.',
+      });
+      seededSlugs.push(slug);
+    }
+  });
+
+  test.afterAll(async ({ request }) => {
+    const { token } = await loginViaApi(request, ENV.USER_EMAIL, ENV.USER_PASSWORD);
+    for (const slug of seededSlugs) {
+      await deleteArticleViaApi(request, token, slug).catch(() => {});
+    }
+  });
 
   // ── TC_PAG_001 ──────────────────────────────────────────────────────────────
 
