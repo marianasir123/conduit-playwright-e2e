@@ -40,17 +40,19 @@ export default defineConfig({
 
   /**
    * Reporters:
-   *  - list    → readable console output
-   *  - html    → interactive HTML report (uploaded as CI artifact)
-   *  - json    → machine-readable results for scripts/generate-test-report.mjs
-   *  - github  → annotates failing lines in the GitHub Actions UI (CI only)
-   *  - junit   → XML results shown in GitHub Checks via dorny/test-reporter (CI only)
+   *  - list            → readable console output
+   *  - html            → interactive HTML report (uploaded as CI artifact)
+   *  - json            → machine-readable results for scripts/generate-test-report.mjs
+   *  - allure-playwright → rich Allure report with steps, screenshots & videos
+   *  - github          → annotates failing lines in the GitHub Actions UI (CI only)
+   *  - junit           → XML results shown in GitHub Checks via dorny/test-reporter (CI only)
    */
   reporter: process.env.CI
     ? [
         ['list'],
         ['html', { open: 'never' }],
         ['json', { outputFile: 'test-results/results.json' }],
+        ['allure-playwright', { outputFolder: 'allure-results', detail: true, suiteTitle: false }],
         ['github'],
         ['junit', { outputFile: 'test-results/results.xml' }],
       ]
@@ -58,6 +60,7 @@ export default defineConfig({
         ['list'],
         ['html', { open: 'never' }],
         ['json', { outputFile: 'test-results/results.json' }],
+        ['allure-playwright', { outputFolder: 'allure-results', detail: true, suiteTitle: false }],
       ],
 
   use: {

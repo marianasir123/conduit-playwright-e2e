@@ -7,6 +7,10 @@ playwright-report/
 blob-report/
 .cache/
 
+## Allure output (generated — do not commit)
+allure-results/
+allure-report/
+
 ## Environment – never commit real credentials
 .env
 

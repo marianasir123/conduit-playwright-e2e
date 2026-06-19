@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
@@ -60,6 +60,36 @@ jobs:
           path: test-results/results.xml
           reporter: java-junit
           fail-on-error: false
+
+      # ── Allure ──────────────────────────────────────────────────────────────
+
+      - name: Install Allure CLI
+        if: always()
+        run: npm install -g allure-commandline@latest --silent
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          mkdir -p allure-results
+          allure generate allure-results --clean -o allure-report
+
+      - name: Upload Allure results (raw)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 14
+
+      - name: Upload Allure report (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 14
+
+      # ── Playwright built-in artifacts ────────────────────────────────────────
 
       - name: Upload HTML report
         if: always()

@@ -12,12 +12,16 @@
     "test:webkit": "playwright test --project=webkit",
     "report": "playwright show-report",
     "report:generate": "node scripts/generate-test-report.mjs",
-    "report:summary": "npm run report:generate && node -e \"const fs=require('fs');console.log(fs.readFileSync('test-results/summary.md','utf8'))\""
+    "report:summary": "npm run report:generate && node -e \"const fs=require('fs');console.log(fs.readFileSync('test-results/summary.md','utf8'))\"",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "allure:report": "npm run allure:generate && npm run allure:open"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
     "@playwright/test": "^1.58.1",
     "@types/node": "^25.2.0",
+    "allure-playwright": "^3.10.0",
     "dotenv": "^17.4.2"
   }
 }
