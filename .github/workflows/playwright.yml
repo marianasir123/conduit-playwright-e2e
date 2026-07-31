@@ -10,6 +10,8 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
+  pages: write
+  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -71,6 +73,7 @@ jobs:
         if: always()
         run: |
           mkdir -p allure-results
+          echo "Allure result files: $(find allure-results -type f 2>/dev/null | wc -l)"
           allure generate allure-results --clean -o allure-report
 
       - name: Upload Allure results (raw)
@@ -80,6 +83,7 @@ jobs:
           name: allure-results
           path: allure-results/
           retention-days: 14
+          if-no-files-found: warn
 
       - name: Upload Allure report (HTML)
         if: always()
@@ -88,6 +92,13 @@ jobs:
           name: allure-report
           path: allure-report/
           retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload Allure report for GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
 
       # ── Playwright built-in artifacts ────────────────────────────────────────
 
@@ -118,3 +129,17 @@ jobs:
           name: test-results
           path: test-results/
           retention-days: 7
+
+  deploy-allure-report:
+    name: Deploy Allure report to GitHub Pages
+    needs: e2e
+    if: github.ref == 'refs/heads/main' && needs.e2e.result != 'cancelled'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
