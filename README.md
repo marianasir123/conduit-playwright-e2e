@@ -4,8 +4,6 @@
 
 End-to-end test suite for the [Conduit](https://conduit.bondaracademy.com) (RealWorld) demo application, built with **Playwright** and **TypeScript**.
 
-**Live Allure report (main branch):** [GitHub Pages](https://marianasir123.github.io/conduit-playwright-e2e/)
-
 ---
 
 ## Tech Stack
@@ -178,19 +176,9 @@ Configure at: **Repository → Settings → Secrets and variables → Actions**
 
 To download: open a workflow run → **Artifacts** section at the bottom.
 
-### GitHub Pages — live Allure report
+**View Allure from CI:** download the `allure-report` artifact, unzip, and open `index.html` (or run `npx serve allure-report`).
 
-On every push to `main`, the Allure HTML report is deployed to GitHub Pages.
-
-**One-time setup (required):**
-
-1. Go to **Repository → Settings → Pages**
-2. Under **Build and deployment → Source**, select **GitHub Actions**
-3. Push to `main` — the `deploy-allure-report` job publishes the report
-
-**Report URL:** `https://marianasir123.github.io/conduit-playwright-e2e/`
-
-> If the page is empty after the first run, wait for the workflow to finish and refresh. The report updates after each push to `main`.
+> Allure reports are **private CI artifacts only** — they are not published to any public URL.
 
 ---
 

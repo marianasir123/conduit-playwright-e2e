@@ -11,6 +11,9 @@ blob-report/
 allure-results/
 allure-report/
 
+## Runtime screenshot captures (baselines live in *-snapshots/ folders)
+screenshots/**/*-current.png
+
 ## Environment – never commit real credentials
 .env
 
